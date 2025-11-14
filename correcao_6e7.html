@@ -102,6 +102,9 @@
 </div>
 
 <script>
+    // LISTA DE QUESTÕES ANULADAS (adicione aqui)
+    const anuladas = []; // Exemplo: [5, 12, 22]
+
     // GABARITO OFICIAL 6ºs e 7ºs
     const gabarito = {
         1:"B", 2:"C", 3:"C", 4:"A", 5:"C", 6:"B", 7:"C", 8:"A", 9:"B", 10:"A",
@@ -121,11 +124,41 @@
     const feedback = document.getElementById("feedback");
     const finalBox = document.getElementById("final");
 
-    input.addEventListener("input", () => {
+    // FUNÇÃO QUE MUDA PARA A PRÓXIMA QUESTÃO
+    function proximaQuestao() {
+        atual++;
+
+        if (atual > 60) {
+            mostrarResultadoFinal();
+            return;
+        }
+
+        qAtual.textContent = atual;
+        input.value = "";
+        feedback.textContent = "";
+        input.focus();
+
+        // Se a próxima questão estiver anulada → pula automaticamente
+        if (anuladas.includes(atual)) {
+            feedback.textContent = "⚠ Questão anulada — pulando...";
+            setTimeout(proximaQuestao, 400);
+        }
+    }
+
+    // EVENTO PRINCIPAL
+    input.addEventListener("keyup", (e) => {
         let letra = input.value.toUpperCase();
 
-        if (!["A","B","C"].includes(letra)) {
-            input.value = "";
+        // ENTER SEM DIGITAR NADA → pula questão
+        if (e.key === "Enter" && letra === "") {
+            feedback.textContent = "⏭ Questão pulada";
+            feedback.className = "";
+            setTimeout(proximaQuestao, 300);
+            return;
+        }
+
+        // Deve digitar apenas A/B/C
+        if (!["A", "B", "C"].includes(letra)) {
             return;
         }
 
@@ -144,19 +177,7 @@
         document.getElementById("acertos").textContent = acertos;
         document.getElementById("erros").textContent = erros;
 
-        setTimeout(() => {
-            atual++;
-
-            if (atual > 60) {
-                mostrarResultadoFinal();
-                return;
-            }
-
-            qAtual.textContent = atual;
-            input.value = "";
-            feedback.textContent = "";
-            input.focus();
-        }, 350);
+        setTimeout(proximaQuestao, 350);
     });
 
     function mostrarResultadoFinal() {
