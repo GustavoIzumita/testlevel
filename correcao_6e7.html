@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Correção - 6ºs e 7ºs</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px #0002;
+        }
+        #titulo {
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+        }
+        #subtitulo {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 5px;
+            color: #555;
+        }
+        #status {
+            margin-top: 15px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #questaoBox {
+            margin-top: 30px;
+            text-align: center;
+        }
+        #questaoNumero {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        #inputLetra {
+            width: 120px;
+            font-size: 32px;
+            text-align: center;
+            padding: 8px;
+            text-transform: uppercase;
+        }
+        #feedback {
+            margin-top: 15px;
+            font-size: 22px;
+            font-weight: bold;
+            height: 30px;
+        }
+        .certo { color: green; }
+        .errado { color: red; }
+        #final {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #eef;
+            border-radius: 12px;
+            font-size: 20px;
+        }
+        #voltar {
+            display: block;
+            margin-top: 25px;
+            text-align: center;
+            font-size: 18px;
+        }
+        a {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="titulo">Correção Rápida</div>
+    <div id="subtitulo">Turmas: 6ºs e 7ºs</div>
+
+    <div id="status">
+        Acertos: <span id="acertos">0</span> |
+        Erros: <span id="erros">0</span>
+    </div>
+
+    <div id="questaoBox">
+        <div id="questaoNumero">Questão <span id="qAtual">1</span> de 60</div>
+        <input autofocus id="inputLetra" maxlength="1" />
+        <div id="feedback"></div>
+    </div>
+
+    <div id="final"></div>
+
+    <div id="voltar">
+        <a href="index.html">← Voltar para seleção de turma</a>
+    </div>
+
+</div>
+
+<script>
+    // GABARITO OFICIAL 6ºs e 7ºs
+    const gabarito = {
+        1:"B", 2:"C", 3:"C", 4:"A", 5:"C", 6:"B", 7:"C", 8:"A", 9:"B", 10:"A",
+        11:"B", 12:"C", 13:"C", 14:"A", 15:"B", 16:"A", 17:"C", 18:"B", 19:"B", 20:"C",
+        21:"A", 22:"C", 23:"A", 24:"B", 25:"B", 26:"C", 27:"A", 28:"C", 29:"A", 30:"B",
+        31:"A", 32:"C", 33:"A", 34:"C", 35:"B", 36:"B", 37:"C", 38:"A", 39:"C", 40:"C",
+        41:"A", 42:"B", 43:"C", 44:"A", 45:"A", 46:"B", 47:"A", 48:"B", 49:"C", 50:"B",
+        51:"C", 52:"B", 53:"A", 54:"C", 55:"B", 56:"C", 57:"B", 58:"C", 59:"A", 60:"B"
+    };
+
+    let atual = 1;
+    let acertos = 0;
+    let erros = 0;
+
+    const input = document.getElementById("inputLetra");
+    const qAtual = document.getElementById("qAtual");
+    const feedback = document.getElementById("feedback");
+    const finalBox = document.getElementById("final");
+
+    input.addEventListener("input", () => {
+        let letra = input.value.toUpperCase();
+
+        if (!["A","B","C"].includes(letra)) {
+            input.value = "";
+            return;
+        }
+
+        let correta = gabarito[atual];
+
+        if (letra === correta) {
+            acertos++;
+            feedback.textContent = "✔ Acertou!";
+            feedback.className = "certo";
+        } else {
+            erros++;
+            feedback.textContent = `❌ Errou (certo: ${correta})`;
+            feedback.className = "errado";
+        }
+
+        document.getElementById("acertos").textContent = acertos;
+        document.getElementById("erros").textContent = erros;
+
+        setTimeout(() => {
+            atual++;
+
+            if (atual > 60) {
+                mostrarResultadoFinal();
+                return;
+            }
+
+            qAtual.textContent = atual;
+            input.value = "";
+            feedback.textContent = "";
+            input.focus();
+        }, 350);
+    });
+
+    function mostrarResultadoFinal() {
+        document.getElementById("questaoBox").style.display = "none";
+        finalBox.style.display = "block";
+
+        finalBox.innerHTML = `
+            <h2>Resultado Final</h2>
+            <p><strong>Acertos:</strong> ${acertos}/60</p>
+            <p><strong>Erros:</strong> ${erros}</p>
+        `;
+    }
+</script>
+
+</body>
+</html>
