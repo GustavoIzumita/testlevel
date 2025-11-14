@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Seleção de Turma</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+            background: #eaeaea;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px #0003;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .grupo {
+            padding: 18px;
+            margin-bottom: 15px;
+            background: #f4f4ff;
+            border-radius: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            border: 2px solid #ccc;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .grupo:hover {
+            background: #dfe3ff;
+            border-color: #6b77ff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Selecione a Turma</h1>
+
+    <div class="grupo" onclick="irPara('correcao_6e7.html')">
+        6ºs e 7ºs
+    </div>
+
+    <div class="grupo" onclick="irPara('correcao_8e9_basico_inter.html')">
+        8ºs Básico e Intermediário<br>+ 9ºs Avançado
+    </div>
+
+    <div class="grupo" onclick="irPara('correcao_8e9_avancado.html')">
+        8ºs Avançado<br>+ 9ºs Básico e Intermediário
+    </div>
+</div>
+
+<script>
+    function irPara(pagina) {
+        window.location.href = pagina;
+    }
+</script>
+
+</body>
+</html>
