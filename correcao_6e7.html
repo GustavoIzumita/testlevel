@@ -64,6 +64,21 @@
             border-radius: 12px;
             font-size: 20px;
         }
+
+        /* Botão de voltar */
+        #btnVoltarQuestao {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            background: #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #btnVoltarQuestao:hover {
+            background: #bbb;
+        }
+
         #voltar {
             display: block;
             margin-top: 25px;
@@ -91,6 +106,9 @@
         <div id="questaoNumero">Questão <span id="qAtual">1</span> de 60</div>
         <input autofocus id="inputLetra" maxlength="1" />
         <div id="feedback"></div>
+
+        <!-- Botão voltar -->
+        <button id="btnVoltarQuestao">← Voltar questão</button>
     </div>
 
     <div id="final"></div>
@@ -102,10 +120,10 @@
 </div>
 
 <script>
-    // LISTA DE QUESTÕES ANULADAS (adicione aqui)
-    const anuladas = []; // Exemplo: [5, 12, 22]
+    // QUESTÕES ANULADAS (coloque os números desejados aqui)
+    const anuladas = []; // exemplo: [5, 12, 22]
 
-    // GABARITO OFICIAL 6ºs e 7ºs
+    // Gabarito
     const gabarito = {
         1:"B", 2:"C", 3:"C", 4:"A", 5:"C", 6:"B", 7:"C", 8:"A", 9:"B", 10:"A",
         11:"B", 12:"C", 13:"C", 14:"A", 15:"B", 16:"A", 17:"C", 18:"B", 19:"B", 20:"C",
@@ -114,6 +132,9 @@
         41:"A", 42:"B", 43:"C", 44:"A", 45:"A", 46:"B", 47:"A", 48:"B", 49:"C", 50:"B",
         51:"C", 52:"B", 53:"A", 54:"C", 55:"B", 56:"C", 57:"B", 58:"C", 59:"A", 60:"B"
     };
+
+    // historico: registra para cada questão o estado: "acerto" | "erro" | "pulado" | "anulada"
+    let historico = {};
 
     let atual = 1;
     let acertos = 0;
@@ -124,58 +145,108 @@
     const feedback = document.getElementById("feedback");
     const finalBox = document.getElementById("final");
 
-    // FUNÇÃO QUE MUDA PARA A PRÓXIMA QUESTÃO
+    function atualizarContadores() {
+        document.getElementById("acertos").textContent = acertos;
+        document.getElementById("erros").textContent = erros;
+    }
+
+    // Função para ir para a próxima questão (registra anuladas como historico também)
     function proximaQuestao() {
+        // avançar
         atual++;
 
+        // se passou do total
         if (atual > 60) {
             mostrarResultadoFinal();
             return;
         }
 
+        // mostra número, limpa campo e feedback
         qAtual.textContent = atual;
         input.value = "";
         feedback.textContent = "";
+        feedback.className = "";
         input.focus();
 
-        // Se a próxima questão estiver anulada → pula automaticamente
+        // se a nova questão for anulada -> registra como 'anulada' e pula automaticamente
         if (anuladas.includes(atual)) {
+            historico[atual] = "anulada";
             feedback.textContent = "⚠ Questão anulada — pulando...";
-            setTimeout(proximaQuestao, 400);
+            setTimeout(proximaQuestao, 450);
         }
     }
 
-    // EVENTO PRINCIPAL
+    // Voltar uma questão: corrige contadores usando historico[prev]
+    document.getElementById("btnVoltarQuestao").addEventListener("click", () => {
+        // não volta antes da primeira
+        if (atual === 1) return;
+
+        const prev = atual - 1;
+
+        // se não tiver histórico para a anterior, nada a descontar
+        if (historico[prev]) {
+            if (historico[prev] === "acerto") acertos = Math.max(0, acertos - 1);
+            if (historico[prev] === "erro") erros = Math.max(0, erros - 1);
+            // se foi 'pulado' ou 'anulada', não mexe nos contadores
+            delete historico[prev]; // remove o registro para permitir re-resposta
+        }
+
+        // volta a questão
+        atual = prev;
+        qAtual.textContent = atual;
+
+        input.value = "";
+        feedback.textContent = "⬅ Voltou para a questão " + atual;
+        feedback.className = "";
+
+        atualizarContadores();
+        input.focus();
+    });
+
+    // Tratamento de entrada: Enter vazio -> pular; A/B/C -> avaliar
     input.addEventListener("keyup", (e) => {
         let letra = input.value.toUpperCase();
 
-        // ENTER SEM DIGITAR NADA → pula questão
+        // ENTER sem digitar → pular (não conta como erro)
         if (e.key === "Enter" && letra === "") {
+            historico[atual] = "pulado";
             feedback.textContent = "⏭ Questão pulada";
             feedback.className = "";
-            setTimeout(proximaQuestao, 300);
+            setTimeout(proximaQuestao, 250);
             return;
         }
 
-        // Deve digitar apenas A/B/C
+        // aceitar apenas A/B/C
         if (!["A", "B", "C"].includes(letra)) {
             return;
         }
 
-        let correta = gabarito[atual];
+        // Se por algum motivo já existir um registro nesta questão (defensivo),
+        // removemos o registro anterior antes de aplicar a nova contagem,
+        // assim evitamos dupla contagem.
+        if (historico[atual]) {
+            // desfaz contagem anterior
+            if (historico[atual] === "acerto") acertos = Math.max(0, acertos - 1);
+            if (historico[atual] === "erro") erros = Math.max(0, erros - 1);
+            // se foi pulo/anulada, não altera contadores
+            // agora podemos sobrescrever o historico[atual]
+        }
+
+        const correta = gabarito[atual];
 
         if (letra === correta) {
             acertos++;
+            historico[atual] = "acerto";
             feedback.textContent = "✔ Acertou!";
             feedback.className = "certo";
         } else {
             erros++;
+            historico[atual] = "erro";
             feedback.textContent = `❌ Errou (certo: ${correta})`;
             feedback.className = "errado";
         }
 
-        document.getElementById("acertos").textContent = acertos;
-        document.getElementById("erros").textContent = erros;
+        atualizarContadores();
 
         setTimeout(proximaQuestao, 350);
     });
@@ -190,6 +261,13 @@
             <p><strong>Erros:</strong> ${erros}</p>
         `;
     }
+
+    // se a primeira questão já for anulada, pular automaticamente (caso queira)
+    if (anuladas.includes(1)) {
+        historico[1] = "anulada";
+        setTimeout(proximaQuestao, 250);
+    }
+
 </script>
 
 </body>
