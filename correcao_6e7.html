@@ -1,46 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Correção - 6ºs e 7ºs</title>
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             padding: 20px;
             background: #f4f4f4;
         }
         .container {
-            max-width: 600px;
+            max-width: 900px;
             margin: auto;
             background: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 0 10px #0002;
         }
+        header {
+            text-align: center;
+        }
         #titulo {
             font-size: 26px;
             font-weight: bold;
-            text-align: center;
         }
         #subtitulo {
-            text-align: center;
             font-size: 18px;
-            margin-top: 5px;
             color: #555;
+            margin-top: 6px;
         }
         #status {
             margin-top: 15px;
-            font-size: 20px;
+            font-size: 18px;
             text-align: center;
         }
+
+        /* Layout: input + table (table aparece logo abaixo) */
         #questaoBox {
-            margin-top: 30px;
-            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
+
         #questaoNumero {
-            font-size: 22px;
-            margin-bottom: 10px;
+            font-size: 20px;
         }
+
         #inputLetra {
             width: 120px;
             font-size: 32px;
@@ -48,75 +56,121 @@
             padding: 8px;
             text-transform: uppercase;
         }
-        #final {
-            display: none;
-            margin-top: 30px;
-            padding: 20px;
-            background: #eef;
-            border-radius: 12px;
-            font-size: 18px;
-        }
+
         #btnVoltarQuestao {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 18px;
+            margin-top: 6px;
+            padding: 10px 18px;
+            font-size: 16px;
             border: none;
             background: #ccc;
             border-radius: 8px;
             cursor: pointer;
         }
-        #btnVoltarQuestao:hover {
-            background: #bbb;
+        #btnVoltarQuestao:hover { background: #bbb; }
+
+        /* Live table */
+        #liveTableContainer {
+            margin-top: 18px;
+            overflow-x: auto;
         }
-        #voltar {
-            display: block;
-            margin-top: 25px;
-            text-align: center;
-            font-size: 18px;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 6px;
         }
         th, td {
             border: 1px solid #444;
             padding: 6px;
             text-align: center;
+            min-width: 60px;
         }
-        th {
-            background: #dde;
+        th { background: #dde; }
+
+        .acertou { background-color: #c8f7c5; }
+        .errou   { background-color: #f7c5c5; }
+        .neutro  { background-color: #eee; }
+
+        /* Editable cell style */
+        .resposta-cell {
+            outline: none;
+            min-width: 40px;
+            display: inline-block;
+            padding: 4px;
+            border-radius: 4px;
         }
-        .acertou {
-            background-color: #c8f7c5;
+        .resposta-cell[contenteditable="true"]:empty:before {
+            content: "-";
+            color: #999;
         }
-        .errou {
-            background-color: #f7c5c5;
+
+        /* Final summary box (aparece ao terminar) */
+        #finalResumo {
+            display: none;
+            margin-top: 16px;
+            padding: 14px;
+            background: #eef;
+            border-radius: 10px;
+            font-size: 16px;
         }
-        .neutro {
-            background-color: #eee;
+
+        #voltar {
+            display: block;
+            margin-top: 16px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 800px) {
+            .container { max-width: 95%; padding: 15px; }
+            #titulo { font-size: 22px; }
+            #subtitulo { font-size: 16px; }
+            #inputLetra { width: 90px; font-size: 26px; padding: 6px; }
+            #questaoNumero { font-size: 18px; }
+            th, td { font-size: 14px; padding: 4px; }
+            #btnVoltarQuestao { width: 100%; }
         }
     </style>
 </head>
 <body>
-
 <div class="container">
 
-    <div id="titulo">Correção Rápida</div>
-    <div id="subtitulo">Turmas: 6ºs e 7ºs</div>
+    <header>
+        <div id="titulo">Correção Rápida</div>
+        <div id="subtitulo">Turmas: 6ºs e 7ºs</div>
+    </header>
 
     <div id="status">
         Acertos: <span id="acertos">0</span> |
-        Erros: <span id="erros">0</span>
+        Erros: <span id="erros">0</span> |
+        Anuladas: <span id="anuladasCount">0</span>
     </div>
 
     <div id="questaoBox">
         <div id="questaoNumero">Questão <span id="qAtual">1</span> de 60</div>
-        <input autofocus id="inputLetra" maxlength="1" autocomplete="off" />
+        <input autofocus id="inputLetra" maxlength="1" autocomplete="off" placeholder="A/B/C" />
         <button id="btnVoltarQuestao">← Voltar questão</button>
     </div>
 
-    <div id="final"></div>
+    <!-- Live table aparece aqui e vai crescendo conforme responde -->
+    <div id="liveTableContainer">
+        <table id="liveTable" aria-label="Tabela de respostas">
+            <thead>
+                <tr>
+                    <th>Questão</th>
+                    <th>Sua Resposta</th>
+                    <th>Correta</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas serão inseridas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="finalResumo"></div>
 
     <div id="voltar">
         <a href="index.html">← Voltar para seleção de turma</a>
@@ -125,157 +179,313 @@
 </div>
 
 <script>
-    const anuladas = [];
+/* ========== DADOS ========== */
+const gabarito = {
+    1:"B", 2:"C", 3:"C", 4:"A", 5:"C", 6:"B", 7:"C", 8:"A", 9:"B", 10:"A",
+    11:"B", 12:"C", 13:"C", 14:"A", 15:"B", 16:"A", 17:"C", 18:"B", 19:"B", 20:"C",
+    21:"A", 22:"C", 23:"A", 24:"B", 25:"B", 26:"C", 27:"A", 28:"C", 29:"A", 30:"B",
+    31:"A", 32:"C", 33:"A", 34:"C", 35:"B", 36:"B", 37:"C", 38:"A", 39:"C", 40:"C",
+    41:"A", 42:"B", 43:"C", 44:"A", 45:"A", 46:"B", 47:"A", 48:"B", 49:"C", 50:"B",
+    51:"C", 52:"B", 53:"A", 54:"C", 55:"B", 56:"C", 57:"B", 58:"C", 59:"A", 60:"B"
+};
 
-    const gabarito = {
-        1:"B", 2:"C", 3:"C", 4:"A", 5:"C", 6:"B", 7:"C", 8:"A", 9:"B", 10:"A",
-        11:"B", 12:"C", 13:"C", 14:"A", 15:"B", 16:"A", 17:"C", 18:"B", 19:"B", 20:"C",
-        21:"A", 22:"C", 23:"A", 24:"B", 25:"B", 26:"C", 27:"A", 28:"C", 29:"A", 30:"B",
-        31:"A", 32:"C", 33:"A", 34:"C", 35:"B", 36:"B", 37:"C", 38:"A", 39:"C", 40:"C",
-        41:"A", 42:"B", 43:"C", 44:"A", 45:"A", 46:"B", 47:"A", 48:"B", 49:"C", 50:"B",
-        51:"C", 52:"B", 53:"A", 54:"C", 55:"B", 56:"C", 57:"B", 58:"C", 59:"A", 60:"B"
-    };
+let historico = {}; // { numero: { status: 'acerto'|'erro'|'anulada', resposta: 'A'|'B'|'C' } }
+let atual = 1;
 
-    let historico = {};
-    let atual = 1;
-    let acertos = 0;
-    let erros = 0;
+/* Contadores */
+let acertos = 0;
+let erros = 0;
 
-    const input = document.getElementById("inputLetra");
-    const qAtual = document.getElementById("qAtual");
-    const finalBox = document.getElementById("final");
+/* Elementos DOM */
+const input = document.getElementById("inputLetra");
+const qAtual = document.getElementById("qAtual");
+const liveTableBody = document.querySelector("#liveTable tbody");
+const acertosSpan = document.getElementById("acertos");
+const errosSpan = document.getElementById("erros");
+const anuladasSpan = document.getElementById("anuladasCount");
+const finalResumo = document.getElementById("finalResumo");
 
-    function atualizarContadores() {
-        document.getElementById("acertos").textContent = acertos;
-        document.getElementById("erros").textContent = erros;
+/* ========== FUNÇÕES AUXILIARES ========== */
+
+/** Normaliza string para '', 'A','B','C' */
+function normalizeResposta(s) {
+    if (!s && s !== "") return "";
+    s = String(s).trim().toUpperCase();
+    if (s === "") return "";
+    // aceita apenas A B C
+    if (["A","B","C"].includes(s)) return s;
+    // se usuário digitar "a." ou "a)" tenta extrair letra
+    const m = s.match(/[ABC]/i);
+    return m ? m[0].toUpperCase() : "";
+}
+
+/** Recalcula contadores a partir de historico e atualiza spans e todas as linhas */
+function recalcCountsAndRenderAll() {
+    acertos = 0;
+    erros = 0;
+    let anuladas = 0;
+
+    // percorre historico para contar
+    for (const numStr of Object.keys(historico)) {
+        const num = Number(numStr);
+        const entry = historico[num];
+        if (!entry || !entry.status) continue;
+        if (entry.status === "acerto") acertos++;
+        else if (entry.status === "erro") erros++;
+        else if (entry.status === "anulada") anuladas++;
     }
 
-    function proximaQuestao() {
-        atual++;
-        // Se passou de 60, mostrar resultado (proteção caso chamado indevidamente)
-        if (atual > 60) {
-            mostrarResultadoFinal();
-            return;
-        }
-        qAtual.textContent = atual;
-        input.value = "";
-        input.focus();
+    // atualiza spans
+    acertosSpan.textContent = acertos;
+    errosSpan.textContent = erros;
+    anuladasSpan.textContent = anuladas;
+
+    // atualiza DOM das linhas existentes (se a linha não existir, cria)
+    // Vamos garantir que as linhas para todos os números em historico existam.
+    for (const numStr of Object.keys(historico)) {
+        const num = Number(numStr);
+        renderOrUpdateRow(num);
     }
+}
 
-    document.getElementById("btnVoltarQuestao").addEventListener("click", () => {
-        if (atual === 1) return;
-        const prev = atual - 1;
+/** Cria ou atualiza uma linha da tabela para a questão i (somente se existe historico[i]) */
+function renderOrUpdateRow(i) {
+    const entry = historico[i] || { status: "anulada", resposta: "" };
+    const rowId = `row-${i}`;
+    let tr = document.getElementById(rowId);
 
-        if (historico[prev]) {
-            if (historico[prev].status === "acerto") acertos = Math.max(0, acertos - 1);
-            if (historico[prev].status === "erro") erros = Math.max(0, erros - 1);
-            delete historico[prev];
+    // Se não existir a linha, cria e insere na posição correta (ordenada)
+    if (!tr) {
+        tr = document.createElement("tr");
+        tr.id = rowId;
+
+        // número
+        const tdNum = document.createElement("td");
+        tdNum.textContent = i;
+        tr.appendChild(tdNum);
+
+        // sua resposta (contenteditable)
+        const tdResp = document.createElement("td");
+        const spanResp = document.createElement("span");
+        spanResp.className = "resposta-cell";
+        spanResp.setAttribute("contenteditable", "true");
+        spanResp.setAttribute("aria-label", `Resposta da questão ${i}`);
+        spanResp.dataset.qnum = i;
+        tdResp.appendChild(spanResp);
+        tr.appendChild(tdResp);
+
+        // correta
+        const tdCorr = document.createElement("td");
+        tdCorr.textContent = gabarito[i] || "-";
+        tr.appendChild(tdCorr);
+
+        // status
+        const tdStatus = document.createElement("td");
+        tdStatus.className = "status-cell";
+        tr.appendChild(tdStatus);
+
+        // Inserir linha na posição ordenada
+        // encontra primeiro row existente com número maior que i
+        let inserted = false;
+        const rows = Array.from(liveTableBody.querySelectorAll("tr"));
+        for (const existing of rows) {
+            const numExist = Number(existing.id.replace("row-",""));
+            if (numExist > i) {
+                liveTableBody.insertBefore(tr, existing);
+                inserted = true;
+                break;
+            }
         }
+        if (!inserted) liveTableBody.appendChild(tr);
 
-        atual = prev;
-        qAtual.textContent = atual;
-        atualizarContadores();
-        input.value = "";
-        input.focus();
-    });
+        // adicionar listener de edição na célula de resposta
+        spanResp.addEventListener("input", (ev) => {
+            // o usuário editando manualmente na tabela: atualiza historico, recalcula e atualiza cores
+            const qn = Number(ev.target.dataset.qnum);
+            const raw = ev.target.textContent;
+            const norm = normalizeResposta(raw);
 
-    input.addEventListener("keyup", (e) => {
-        let letra = input.value.toUpperCase();
-
-        // ENTER vazio = ANULADA
-        if (e.key === "Enter" && letra === "") {
-            // registra anulada para a questão atual
-            historico[atual] = { status: "anulada" };
-
-            // se for a última questão, mostra resultado; senão avança
-            if (atual === 60) {
-                mostrarResultadoFinal();
+            if (norm === "") {
+                // vazio -> anulada
+                historico[qn] = { status: "anulada", resposta: "" };
             } else {
-                proximaQuestao();
+                const correta = gabarito[qn];
+                if (norm === correta) historico[qn] = { status: "acerto", resposta: norm };
+                else historico[qn] = { status: "erro", resposta: norm };
             }
-            return;
-        }
+            recalcCountsAndRenderAll();
+            updateRowVisual(qn);
+        });
 
-        // aceitar apenas A/B/C (responder sem precisar apertar Enter)
-        if (!["A", "B", "C"].includes(letra)) return;
+        // também tratar paste para forçar conteúdo válido
+        spanResp.addEventListener("paste", (ev) => {
+            ev.preventDefault();
+            const text = (ev.clipboardData || window.clipboardData).getData('text');
+            const norm = normalizeResposta(text);
+            document.execCommand("insertText", false, norm);
+        });
 
-        const correta = gabarito[atual];
-
-        if (letra === correta) {
-            acertos++;
-            historico[atual] = { status: "acerto", resposta: letra, correta };
-        } else {
-            erros++;
-            historico[atual] = { status: "erro", resposta: letra, correta };
-        }
-
-        atualizarContadores();
-
-        // Se era a última questão (60), mostra o resultado direto.
-        if (atual === 60) {
-            mostrarResultadoFinal();
-        } else {
-            proximaQuestao();
-        }
-    });
-
-    function mostrarResultadoFinal() {
-        // Desabilita input para evitar mudanças após o resultado
-        input.disabled = true;
-        document.getElementById("questaoBox").style.display = "none";
-        finalBox.style.display = "block";
-
-        let tabela = `
-            <h2>Resultado Final</h2>
-            <p><strong>Acertos:</strong> ${acertos}/60</p>
-            <p><strong>Erros:</strong> ${erros}</p>
-
-            <table>
-                <tr>
-                    <th>Questão</th>
-                    <th>Sua Resposta</th>
-                    <th>Correta</th>
-                    <th>Status</th>
-                </tr>
-        `;
-
-        for (let i = 1; i <= 60; i++) {
-            // se não respondeu, considera anulada (ou preencha como quiser)
-            const h = historico[i] || { status: "anulada" };
-
-            let classe = "neutro";
-            let status = "⚠ Anulada";
-
-            if (h.status === "acerto") {
-                classe = "acertou";
-                status = "✔ Acertou";
-            } else if (h.status === "erro") {
-                classe = "errou";
-                status = "✘ Errou";
-            } else if (h.status === "anulada") {
-                classe = "neutro";
-                status = "⚠ Anulada";
+        // ao perder foco, normalizar o texto (apenas a letra ou vazio)
+        spanResp.addEventListener("blur", (ev) => {
+            const qn = Number(ev.target.dataset.qnum);
+            const norm = normalizeResposta(ev.target.textContent);
+            ev.target.textContent = norm;
+            // atualizar historico conforme norm
+            if (norm === "") historico[qn] = { status: "anulada", resposta: "" };
+            else {
+                const correta = gabarito[qn];
+                if (norm === correta) historico[qn] = { status: "acerto", resposta: norm };
+                else historico[qn] = { status: "erro", resposta: norm };
             }
-
-            tabela += `
-                <tr class="${classe}">
-                    <td>${i}</td>
-                    <td>${h.resposta || "-"}</td>
-                    <td>${h.correta || "-"}</td>
-                    <td>${status}</td>
-                </tr>
-            `;
-        }
-
-        tabela += "</table>";
-        finalBox.innerHTML = tabela;
+            recalcCountsAndRenderAll();
+            updateRowVisual(qn);
+        });
     }
 
-    // Se quiser pré-anular questões específicas (opcional)
-    if (anuladas.includes(1)) {
-        historico[1] = { status: "anulada" };
-        proximaQuestao();
+    // Preencher/atualizar os conteúdos da linha
+    const spanResp = tr.querySelector(".resposta-cell");
+    const tdCorr = tr.children[2];
+    const tdStatus = tr.querySelector(".status-cell");
+
+    // set resposta visível (apenas a letra ou -)
+    spanResp.textContent = entry.resposta || "";
+
+    // correta (caso mude)
+    tdCorr.textContent = gabarito[i] || "-";
+
+    // status e classe
+    if (entry.status === "acerto") {
+        tr.className = "acertou";
+        tdStatus.textContent = "✔ Acertou";
+    } else if (entry.status === "erro") {
+        tr.className = "errou";
+        tdStatus.textContent = "✘ Errou";
+    } else {
+        tr.className = "neutro";
+        tdStatus.textContent = "⚠ Anulada";
     }
+}
+
+/** Atualiza apenas a aparência de uma linha (assumindo historico[i] já atualizado) */
+function updateRowVisual(i) {
+    const tr = document.getElementById(`row-${i}`);
+    if (!tr) return;
+    const entry = historico[i] || { status: "anulada", resposta: "" };
+    const tdCorr = tr.children[2];
+    const tdStatus = tr.querySelector(".status-cell");
+    const spanResp = tr.querySelector(".resposta-cell");
+
+    spanResp.textContent = entry.resposta || "";
+    tdCorr.textContent = gabarito[i] || "-";
+
+    if (entry.status === "acerto") {
+        tr.className = "acertou";
+        tdStatus.textContent = "✔ Acertou";
+    } else if (entry.status === "erro") {
+        tr.className = "errou";
+        tdStatus.textContent = "✘ Errou";
+    } else {
+        tr.className = "neutro";
+        tdStatus.textContent = "⚠ Anulada";
+    }
+}
+
+/* ========== LÓGICA PRINCIPAL ========== */
+
+/** avança para a próxima questão (atual++) */
+function proximaQuestao() {
+    if (atual < 60) {
+        atual++;
+        qAtual.textContent = atual;
+        input.value = "";
+        input.focus();
+    } else {
+        // terminou: mostrar resumo final
+        mostrarResultadoFinal();
+    }
+}
+
+/** volta questão */
+document.getElementById("btnVoltarQuestao").addEventListener("click", () => {
+    if (atual === 1) return;
+    // Ao voltar, não apagamos o histórico; apenas decrementamos a atual para permitir mudar resposta
+    atual = Math.max(1, atual - 1);
+    qAtual.textContent = atual;
+    input.value = "";
+    input.focus();
+});
+
+/** Evento do input principal (aceita A/B/C, Enter vazio para anulada) */
+input.addEventListener("keyup", (e) => {
+    let letra = normalizeResposta(input.value);
+
+    // Se ENTER vazio = ANULADA
+    if (e.key === "Enter" && letra === "") {
+        historico[atual] = { status: "anulada", resposta: "" };
+        renderOrUpdateRow(atual);
+        recalcCountsAndRenderAll();
+        // se última, mostra resumo
+        if (atual === 60) mostrarResultadoFinal();
+        else proximaQuestao();
+        return;
+    }
+
+    // aceitar apenas A/B/C (sem precisar apertar Enter)
+    if (!["A","B","C"].includes(letra)) return;
+
+    const correta = gabarito[atual];
+    if (letra === correta) historico[atual] = { status: "acerto", resposta: letra };
+    else historico[atual] = { status: "erro", resposta: letra };
+
+    // render e recalcular
+    renderOrUpdateRow(atual);
+    recalcCountsAndRenderAll();
+
+    // Se última, mostrar resumo
+    if (atual === 60) mostrarResultadoFinal();
+    else proximaQuestao();
+});
+
+/* Quando a página carrega, podemos pré-criar a linha 1 vazia (opcional).
+   Vou manter a tabela vazia até a primeira resposta, para que o comportamento
+   seja: a tabela vai "aparecendo" conforme for respondendo. */
+
+/* ========== FUNÇÃO DE RESULTADO FINAL ========== */
+function mostrarResultadoFinal() {
+    input.disabled = true;
+    document.getElementById("questaoBox").style.display = "none";
+    finalResumo.style.display = "block";
+
+    // Garante que todas as 60 questões tenham uma entrada em historico (anulada se vazio)
+    for (let i = 1; i <= 60; i++) {
+        if (!historico[i]) historico[i] = { status: "anulada", resposta: "" };
+        renderOrUpdateRow(i); // garante que todas as linhas existam
+    }
+    recalcCountsAndRenderAll();
+
+    finalResumo.innerHTML = `
+        <h3>Resultado Final</h3>
+        <p><strong>Acertos:</strong> ${acertos}/60 &nbsp; | &nbsp;
+           <strong>Erros:</strong> ${erros} &nbsp; | &nbsp;
+           <strong>Anuladas:</strong> ${anuladasSpan.textContent}
+        </p>
+        <p>Você pode editar qualquer resposta na coluna <em>Sua Resposta</em> — a contagem será atualizada automaticamente.</p>
+    `;
+
+    // rolar para o resumo (útil em celular)
+    finalResumo.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* Inicialização: focar input */
+input.focus();
+
+/* Nota:
+   - As células "Sua Resposta" aceitam digitação direta (A/B/C).
+   - Ao editar ali, o sistema atualiza historico e recalcula contadores em tempo real.
+   - Ao terminar (questão 60 respondida), mostramos o resumo e garantimos que todas as linhas
+     existam na tabela (você pode editar qualquer uma delas).
+*/
 </script>
-
 </body>
+</html>
+
